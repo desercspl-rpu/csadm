@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Command Center - Desktop</title>
+<style>
+  :root {
+    --bg-deep: #090D16;
+    --panel-bg: rgba(18, 24, 38, 0.7);
+    --border-glow: rgba(56, 189, 248, 0.2);
+    --text-main: #F8FAFC;
+    --text-muted: #94A3B8;
+    --accent-pcc: #38BDF8;
+    --accent-pvc: #C084FC;
+    --accent-join: #34D399;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-deep);
+    color: var(--text-main);
+    overflow: hidden;
+  }
+
+  .desktop-matrix {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: 100vh;
+    background: radial-gradient(circle at 10% 20%, #111e38 0%, #090d16 90%);
+  }
+
+  /* Left Anchor Navigation Panel */
+  .anchor-sidebar {
+    background: var(--panel-bg);
+    backdrop-filter: blur(16px);
+    border-right: 1px solid var(--border-glow);
+    padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .sidebar-header h1 {
+    font-size: 1.25rem;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 30px;
+  }
+
+  .anchor-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Unique Anchor Tag Design */
+  .anchor-tag {
+    position: relative;
+    padding: 20px 24px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .anchor-tag::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    border-radius: 4px 0 0 4px;
+    transition: width 0.3s ease;
+  }
+
+  /* Specific Anchor Accents */
+  .anchor-tag.pcc::before { background: var(--accent-pcc); }
+  .anchor-tag.pvc::before { background: var(--accent-pvc); }
+  .anchor-tag.join::before { background: var(--accent-join); }
+
+  .anchor-tag:hover {
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateX(6px);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .anchor-tag:hover::before {
+    width: 8px;
+  }
+
+  .arrow-icon {
+    opacity: 0.4;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+
+  .anchor-tag:hover .arrow-icon {
+    opacity: 1;
+    transform: translateX(4px);
+  }
+
+  /* Right Live Workspace Preview */
+  .workspace-stage {
+    padding: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .stage-welcome-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-glow);
+    padding: 40px;
+    border-radius: 20px;
+    max-width: 600px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  }
+
+  .stage-welcome-card h2 {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    background: linear-gradient(90deg, #38BDF8, #C084FC);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .stage-welcome-card p {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="desktop-matrix">
+  <!-- Anchor Sidebar Links -->
+  <aside class="anchor-sidebar">
+    <div class="sidebar-header">
+      <h1>Admin Portal</h1>
+      <div class="anchor-list">
+        <a href="#pcc-verification" class="anchor-tag pcc">
+          <span>PCC Verification</span>
+          <span class="arrow-icon">&rarr;</span>
+        </a>
+        <a href="#pvc-id-monitoring" class="anchor-tag pvc">
+          <span>PVC ID Card Monitoring</span>
+          <span class="arrow-icon">&rarr;</span>
+        </a>
+        <a href="#joining-application" class="anchor-tag join">
+          <span>Joining Application</span>
+          <span class="arrow-icon">&rarr;</span>
+        </a>
+      </div>
+    </div>
+    <div style="font-size: 0.85rem; color: var(--text-muted);">Secure Gateway v4.2</div>
+  </aside>
+
+  <!-- Dynamic Content Stage -->
+  <main class="workspace-stage">
+    <div class="stage-welcome-card">
+      <h2>Select an Anchor Module</h2>
+      <p>Choose an administrative anchor tag from the left command panel to initialize real-time management pipelines, verification queues, and batch tracking monitors.</p>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>
