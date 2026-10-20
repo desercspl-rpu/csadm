@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard - Police Verification</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      --surface: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+
+    * { 
+      box-sizing: border-box; 
+      font-family: 'Poppins', sans-serif; 
+      -webkit-tap-highlight-color: transparent; 
+    }
+    body { 
+      margin: 0; 
+      min-height: 100vh; 
+      background: var(--bg-gradient); 
+      padding: 24px; 
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container { 
+      width: 100%; 
+      max-width: 1400px;
+      background: var(--surface); 
+      padding: 32px; 
+      border-radius: 20px; 
+      border: 1px solid rgba(255, 255, 255, 0.8); 
+      box-shadow: 0 20px 35px -10px rgba(99, 102, 241, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+    }
+    h2 { 
+      margin-top: 0; 
+      font-weight: 600; 
+      color: var(--text-main); 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      font-size: 1.5rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 16px;
+    }
+    .refresh-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+      transition: all 0.2s ease;
+    }
+    .refresh-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 15px rgba(99, 102, 241, 0.35);
+    }
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: left;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+    th {
+      background: #f8fafc;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+    }
+    tr:hover td {
+      background-color: #fafbfc;
+    }
+    .badge {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      display: inline-block;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .badge-pending { background: #fef3c7; color: #b45309; }
+    .badge-verified { background: #d1fae5; color: #047857; }
+    .badge-new { background: #e0f2fe; color: #0369a1; }
+    
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 13px;
+      outline: none;
+      background: #f8fafc;
+      transition: all 0.2s ease;
+    }
+    input[type="text"]:focus, textarea:focus {
+      background: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+    .action-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    button.act-btn {
+      padding: 7px 12px;
+      font-size: 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    button.act-btn:active {
+      transform: scale(0.96);
+    }
+    .btn-verify { background: #10b981; color: white; }
+    .btn-pending { background: #f59e0b; color: white; }
+    .btn-reset { background: #64748b; color: white; }
+    .btn-delete { background: #ef4444; color: white; }
+    .btn-save { background: var(--primary); color: white; margin-top: 6px; width: 100%; border-radius: 8px; padding: 8px; }
+    
+    .error-msg {
+      color: #ef4444;
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 10px;
+    }
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* UNIQUE MOBILE RESPONSIVE CARD TRANSFORMATION */
+    @media (max-width: 768px) {
+      body {
+        padding: 12px;
+      }
+      .container {
+        padding: 16px;
+        border-radius: 16px;
+      }
+      h2 {
+        font-size: 1.15rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .refresh-btn {
+        width: 100%;
+        padding: 12px;
+      }
+      /* Hide standard desktop table layout headers */
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead {
+        display: none;
+      }
+      tr {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        margin-bottom: 16px;
+        padding: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+      }
+      tr:hover td {
+        background-color: transparent;
+      }
+      td {
+        border: none;
+        padding: 8px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: right;
+      }
+      /* Inject custom labels for each cell on mobile using flex layout */
+      td:nth-of-type(1):before { content: "Timestamp"; font-weight: 600; color: var(--text-muted); font-size: 12px; text-align: left; }
+      td:nth-of-type(2):before { content: "Emp ID"; font-weight: 600; color: var(--text-muted); font-size: 12px; text-align: left; }
+      td:nth-of-type(3):before { content: "Name"; font-weight: 600; color: var(--text-muted); font-size: 12px; text-align: left; }
+      td:nth-of-type(4):before { content: "Mobile"; font-weight: 600; color: var(--text-muted); font-size: 12px; text-align: left; }
+      td:nth-of-type(5):before { content: "Document"; font-weight: 600; color: var(--text-muted); font-size: 12px; text-align: left; }
+      td:nth-of-type(6):before { content: "Status"; font-weight: 600; color: var(--text-muted); font-size: 12px; text-align: left; }
+      
+      /* Make comment & action fields stack cleanly full-width on mobile */
+      td:nth-of-type(7), td:nth-of-type(8) {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: left;
+        margin-top: 8px;
+        border-top: 1px dashed var(--border);
+        padding-top: 12px;
+      }
+      td:nth-of-type(7) textarea {
+        margin-top: 4px;
+      }
+      .action-btns {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: 6px;
+        width: 100%;
+      }
+      button.act-btn {
+        padding: 10px;
+        font-size: 12px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>
+    <span>🛠️ Admin Control Dashboard</span>
+    <button class="refresh-btn" onclick="loadDashboard()">Refresh Data</button>
+  </h2>
+  
+  <div id="errorContainer" class="error-msg"></div>
+
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Emp ID</th>
+          <th>Name</th>
+          <th>Mobile</th>
+          <th>Document</th>
+          <th>Status</th>
+          <th>Admin Comment</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="dashboardTableBody">
+        <tr><td colspan="8" class="no-data">Loading records...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// Auto scroll down smoothly on load, reload, or refresh
+window.onload = function() {
+  loadDashboard();
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+};
+
+const API_URL = "https://script.google.com/macros/s/AKfycbyTPMn_czxqQdaR-eOwHEh8_4_E2_Ylb0DxbjIldg0bpT_iIbnLNdxH_90EAXl_Hic7iQ/exec";
+
+function loadDashboard() {
+  const errorContainer = document.getElementById("errorContainer");
+  errorContainer.innerText = "";
+  const tbody = document.getElementById("dashboardTableBody");
+  tbody.innerHTML = `<tr><td colspan="8" class="no-data">Loading records...</td></tr>`;
+
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "getAdminDashboard" })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(res.status === "error") {
+      errorContainer.innerText = res.message;
+      tbody.innerHTML = `<tr><td colspan="8" class="no-data">Failed to load data.</td></tr>`;
+      return;
+    }
+
+    const records = res.data;
+    if(!records || records.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="no-data">No applications found.</td></tr>`;
+      return;
+    }
+
+    let html = "";
+    records.forEach((rec, idx) => {
+      let badgeClass = "badge-new";
+      if(rec.status === "VERIFIED_DONE" || rec.status === "VERIFIED") badgeClass = "badge-verified";
+      else if(rec.status === "PENDING_VERIFICATION" || rec.status === "SUBMITTED_TO_OFFICE") badgeClass = "badge-pending";
+
+      const formattedDate = rec.timestamp ? new Date(rec.timestamp).toLocaleString() : "";
+      const fileLink = rec.fileUrl ? `<a href="${rec.fileUrl}" target="_blank">View File</a>` : "No File";
+
+      html += `
+        <tr>
+          <td>${formattedDate}</td>
+          <td><strong>${rec.empId || ""}</strong></td>
+          <td>${rec.name || ""}</td>
+          <td>${rec.mobile || ""}</td>
+          <td>${fileLink}</td>
+          <td><span class="badge ${badgeClass}">${rec.status || "NEW_REQUEST"}</span></td>
+          <td>
+            <textarea id="comment_${idx}" placeholder="Add remark...">${rec.comment || ""}</textarea>
+            <button class="act-btn btn-save" onclick="updateComment('${rec.empId}', ${idx})">Save Remark</button>
+          </td>
+          <td>
+            <div class="action-btns">
+              <button class="act-btn btn-verify" onclick="triggerAction('${rec.empId}', 'VERIFY', ${idx})">Verify</button>
+              <button class="act-btn btn-pending" onclick="triggerAction('${rec.empId}', 'PENDING_STAGE', ${idx})">Set Pending</button>
+              <button class="act-btn btn-reset" onclick="triggerAction('${rec.empId}', 'MOBILE_STAGE', ${idx})">Reset</button>
+              <button class="act-btn btn-delete" onclick="triggerAction('${rec.empId}', 'REMOVE', ${idx})">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  })
+  .catch(err => {
+    errorContainer.innerText = "Error connecting to server: " + err.toString();
+    tbody.innerHTML = `<tr><td colspan="8" class="no-data">Connection error.</td></tr>`;
+  });
+}
+
+function updateComment(empId, idx) {
+  const commentText = document.getElementById(`comment_${idx}`).value;
+  executeActionRequest({
+    action: "adminAction",
+    targetEmpId: empId,
+    type: "COMMENT_ONLY",
+    comment: commentText
+  });
+}
+
+function triggerAction(empId, type, idx) {
+  if(type === "REMOVE" && !confirm("Are you sure you want to delete this record?")) {
+    return;
+  }
+  const commentText = document.getElementById(`comment_${idx}`).value;
+  executeActionRequest({
+    action: "adminAction",
+    targetEmpId: empId,
+    type: type,
+    comment: commentText
+  });
+}
+
+function executeActionRequest(payload) {
+  const errorContainer = document.getElementById("errorContainer");
+  errorContainer.innerText = "";
+
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(payload)
+  })
+  .then(r => r.json())
+  .then(res => {
+    if(res.status === "success") {
+      loadDashboard();
+    } else {
+      errorContainer.innerText = res.message;
+    }
+  })
+  .catch(err => {
+    errorContainer.innerText = "Action failed: " + err.toString();
+  });
+}
+</script>
+</body>
+</html>
