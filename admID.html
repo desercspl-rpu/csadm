@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart ID Admin Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #e0e0e0;
+            --primary-color: #4a90e2;
+            
+            /* Status Badge Colors */
+            --badge-order-placed: #e2e8f0; 
+            --badge-order-placed-text: #475569;
+            --badge-prepared: #fef3c7; 
+            --badge-prepared-text: #d97706;
+            --badge-mfg: #dbeafe; 
+            --badge-mfg-text: #2563eb;
+            --badge-received: #fae8ff; 
+            --badge-received-text: #a21caf;
+            --badge-collect: #dcfce7; 
+            --badge-collect-text: #15803d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 12px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: #1e293b;
+        }
+
+        /* Floating Circular Refresh Button */
+        .btn-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .btn-fab:hover {
+            background-color: #357abd;
+            transform: scale(1.05);
+        }
+
+        .btn-save {
+            background-color: #10b981;
+            color: white;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-save:hover { background-color: #059669; }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-danger:hover { background-color: #dc2626; }
+
+        /* Dynamic Visual Badge State Classes */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .status-order-placed { background-color: var(--badge-order-placed); color: var(--badge-order-placed-text); }
+        .status-prepared { background-color: var(--badge-prepared); color: var(--badge-prepared-text); }
+        .status-mfg { background-color: var(--badge-mfg); color: var(--badge-mfg-text); }
+        .status-received { background-color: var(--badge-received); color: var(--badge-received-text); }
+        .status-collect { background-color: var(--badge-collect); color: var(--badge-collect-text); }
+
+        .link-drive {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .link-drive:hover { text-decoration: underline; }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.1rem;
+            color: #64748b;
+        }
+
+        /* ==========================================================
+           DESKTOP UI (Table View) & ANDROID UI (Card Stack View)
+           ========================================================== */
+
+        /* Desktop Table View Container */
+        .desktop-table-container {
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        tr:hover { background-color: #f8fafc; }
+
+        select, input[type="number"] {
+            padding: 6px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            background-color: #fff;
+            outline: none;
+        }
+        select:focus, input[type="number"]:focus { border-color: var(--primary-color); }
+        input[type="number"] { width: 90px; }
+
+        /* Mobile Card Container (Hidden on Desktop by default) */
+        .mobile-card-container {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Individual Android Card Style */
+        .mobile-admin-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+        .card-emp-id {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .card-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .card-row label {
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .mobile-card-container select, 
+        .mobile-card-container input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .card-actions button {
+            flex: 1;
+            padding: 12px;
+            font-size: 0.95rem;
+        }
+
+        /* MEDIA QUERY SWITCHER */
+        @media (max-width: 768px) {
+            .desktop-table-container {
+                display: none; /* Hide desktop table on Android / Mobile screens */
+            }
+            .mobile-card-container {
+                display: flex; /* Show card layout on Android / Mobile screens */
+            }
+            body {
+                padding: 8px;
+            }
+            h1 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Smart ID - Administrative Control Deck</h1>
+    </header>
+
+    <!-- Desktop Table View -->
+    <div class="desktop-table-container">
+        <table id="adminTable">
+            <thead>
+                <tr>
+                    <th>Emp ID</th>
+                    <th>Visual State Badge</th>
+                    <th>Status</th>
+                    <th>Correction</th>
+                    <th>Photo ID</th>
+                    <th>Payment Doc</th>
+                    <th>Received ₹</th>
+                    <th>Timestamp</th>
+                    <th>Execution Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr>
+                    <td colspan="9" class="loading">Loading backend application payload metrics...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Android / Mobile Card Stack View -->
+    <div id="mobileCardContainer" class="mobile-card-container">
+        <div class="loading">Loading metrics...</div>
+    </div>
+</div>
+
+<!-- Floating Round Refresh Button -->
+<button class="btn-fab" onclick="fetchAdminData()" title="Refresh Fleet">🔄</button>
+
+<script>
+    const API_ENDPOINT = "https://script.google.com/macros/s/AKfycbze0CoaF3BTBzxrDmhWgOF-82cr-azMlKHdbJAACeI4T-tjdy0NkhPzLCx-ppMMowVQ/exec";
+
+    const STATUS_OPTIONS = [
+        "Order Placed",
+        "Prepared",
+        "Send from Manufacture",
+        "Received your Nearest Office",
+        "Collect from Your AO"
+    ];
+
+    function getBadgeClass(status) {
+        switch(status) {
+            case "Order Placed": return "status-order-placed";
+            case "Prepared": return "status-prepared";
+            case "Send from Manufacture": return "status-mfg";
+            case "Received your Nearest Office": return "status-received";
+            case "Collect from Your AO": return "status-collect";
+            default: return "status-order-placed";
+        }
+    }
+
+    // Initial Fetch Hook & Auto Scroll Down on Page Load
+    document.addEventListener("DOMContentLoaded", () => {
+        fetchAdminData().then(() => {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        });
+    });
+
+    async function fetchAdminData() {
+        const tbody = document.getElementById("tableBody");
+        const mobileContainer = document.getElementById("mobileCardContainer");
+        
+        tbody.innerHTML = `<tr><td colspan="9" class="loading">Fetching current matrix configurations...</td></tr>`;
+        mobileContainer.innerHTML = `<div class="loading">Fetching current matrix configurations...</div>`;
+
+        try {
+            const response = await fetch(API_ENDPOINT, {
+                method: "POST",
+                mode: "cors",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({ action: "getAdminData" })
+            });
+            
+            const data = await response.json();
+            
+            if (data.error) {
+                alert("API Execution Error: " + data.error);
+                return;
+            }
+
+            renderViews(data);
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        } catch (err) {
+            alert("Network handshake configuration failed: " + err.message);
+        }
+    }
+
+    function renderViews(records) {
+        const tbody = document.getElementById("tableBody");
+        const mobileContainer = document.getElementById("mobileCardContainer");
+        
+        tbody.innerHTML = "";
+        mobileContainer.innerHTML = "";
+
+        if(records.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="loading">No active requests logged in sheet storage metadata tables.</td></tr>`;
+            mobileContainer.innerHTML = `<div class="loading">No active requests logged in sheet storage metadata tables.</div>`;
+            return;
+        }
+
+        records.forEach(row => {
+            let optionsHTML = STATUS_OPTIONS.map(opt => 
+                `<option value="${opt}" ${row['Status'] === opt ? 'selected' : ''}>${opt}</option>`
+            ).join('');
+
+            const timestampStr = row['Timestamp'] ? new Date(row['Timestamp']).toLocaleString() : 'N/A';
+
+            const photoLink = row['Photo ID'] && row['Photo ID'] !== 'Existing Used' ? 
+                `<a class="link-drive" href="https://drive.google.com/file/d/${row['Photo ID']}/view" target="_blank">🖼️ View Photo</a>` : row['Photo ID'] || 'N/A';
+
+            const paymentLink = row['Payment SS ID'] && row['Payment SS ID'] !== 'N/A' ? 
+                `<a class="link-drive" href="https://drive.google.com/file/d/${row['Payment SS ID']}/view" target="_blank">📄 Receipt</a>` : row['Payment SS ID'] || 'N/A';
+
+            // 1. Render Desktop Table Row
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><strong>${row['Employee ID'] || 'N/A'}</strong></td>
+                <td><span class="badge ${getBadgeClass(row['Status'])}">${row['Status'] || 'Unknown'}</span></td>
+                <td>
+                    <select id="status-desk-${row.rowIndex}">
+                        ${optionsHTML}
+                    </select>
+                </td>
+                <td>${row['Correction Notes'] || '<em>None</em>'}</td>
+                <td>${photoLink}</td>
+                <td>${paymentLink}</td>
+                <td>
+                    <input type="number" id="amount-desk-${row.rowIndex}" value="${row['Amount Received'] || 0}" min="0" step="any">
+                </td>
+                <td><small>${timestampStr}</small></td>
+                <td>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-save" onclick="updateRecord(${row.rowIndex}, 'desk')">💾 Save</button>
+                        <button class="btn-danger" onclick="deleteRecord(${row.rowIndex})">🗑️ Drop</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            // 2. Render Android / Mobile Card View Item
+            const card = document.createElement("div");
+            card.className = "mobile-admin-card";
+            card.innerHTML = `
+                <div class="card-header">
+                    <span class="card-emp-id">🆔 ${row['Employee ID'] || 'N/A'}</span>
+                    <span class="badge ${getBadgeClass(row['Status'])}">${row['Status'] || 'Unknown'}</span>
+                </div>
+                <div>
+                    <label>Status</label>
+                    <select id="status-mob-${row.rowIndex}">
+                        ${optionsHTML}
+                    </select>
+                </div>
+                <div class="card-row">
+                    <label>Correction:</label>
+                    <span>${row['Correction Notes'] || 'None'}</span>
+                </div>
+                <div class="card-row">
+                    <label>Attachments:</label>
+                    <div>${photoLink} | ${paymentLink}</div>
+                </div>
+                <div>
+                    <label>Received ₹</label>
+                    <input type="number" id="amount-mob-${row.rowIndex}" value="${row['Amount Received'] || 0}" min="0" step="any">
+                </div>
+                <div class="card-row">
+                    <label>Timestamp:</label>
+                    <small>${timestampStr}</small>
+                </div>
+                <div class="card-actions">
+                    <button class="btn-save" onclick="updateRecord(${row.rowIndex}, 'mob')">💾 Save Changes</button>
+                    <button class="btn-danger" onclick="deleteRecord(${row.rowIndex})">🗑️ Drop Row</button>
+                </div>
+            `;
+            mobileContainer.appendChild(card);
+        });
+    }
+
+    async function updateRecord(rowIndex, viewType) {
+        const statusValue = document.getElementById(`status-${viewType}-${rowIndex}`).value;
+        const amountValue = parseFloat(document.getElementById(`amount-${viewType}-${rowIndex}`).value) || 0;
+
+        try {
+            const response = await fetch(API_ENDPOINT, {
+                method: "POST",
+                mode: "cors",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({
+                    action: "updateAdminRecord",
+                    rowIndex: rowIndex,
+                    status: statusValue,
+                    amount: amountValue
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert(`Record index row [${rowIndex}] mutated and verified perfectly.`);
+                fetchAdminData();
+            } else {
+                alert("Execution error: " + result.error);
+            }
+        } catch(err) {
+            alert("Mutation request transmission fatal drop: " + err.message);
+        }
+    }
+
+    async function deleteRecord(rowIndex) {
+        if (!confirm(`Are you completely sure you want to drop administrative row record ${rowIndex}?`)) return;
+
+        try {
+            const response = await fetch(API_ENDPOINT, {
+                method: "POST",
+                mode: "cors",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify({
+                    action: "removeAdminRecord",
+                    rowIndex: rowIndex
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert("Record structural row erased successfully.");
+                fetchAdminData();
+            } else {
+                alert("Execution error: " + result.error);
+            }
+        } catch(err) {
+            alert("Drop sequence failure: " + err.message);
+        }
+    }
+</script>
+
+</body>
+</html>
